@@ -79,6 +79,11 @@ defmodule NoSlides.Service do
     wait_result(req_id)
   end
 
+  def clear do
+    req_id = NoSlides.CoverageFsmSupervisor.start_fsm(:clear)
+    wait_result(req_id)
+  end
+
   defp wait_result(req_id, timeout\\5000) do
     receive do
       {^req_id, {:ok, keys}} ->

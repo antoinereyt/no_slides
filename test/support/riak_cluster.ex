@@ -3,9 +3,7 @@ defmodule NoSlides.RiakCluster do
   ## derived from Phoenix.PubSub.Cluster and Riak_core example at https://github.com/lambdaclass/riak_core_tutorial
 
   def start_test_nodes() do
-    #assert !Node.alive?()
     start_master()
-    #assert Node.alive?()
 
     nodes = Application.get_env(:no_slides, :nodes, [])
     # start nodes serially:
@@ -50,6 +48,9 @@ defmodule NoSlides.RiakCluster do
     rpc(node, Application, :put_env, [:riak_core, :web_port, web_port])
     rpc(node, Application, :put_env, [:riak_core, :handoff_port, handoff_port])
     rpc(node, Application, :put_env, [:riak_core, :schema_dirs, ['./priv']])
+
+    rpc(node, Application, :put_env, [:riak_core, :ring_creation_size, 128])
+    rpc(node, Application, :put_env, [:riak_core, :vnode_inactivity_timeout, 1000])
 
     # start our app
     rpc(node, Application, :ensure_all_started, [:no_slides])
