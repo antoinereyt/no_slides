@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/pmenhart/no_slides.svg??branch=riak_core_3)](https://travis-ci.org/pmenhart/no_slides)
+
+
 # NoSlides example application
 
 Example application for the talk at [NoSlidesConf][0]. This application is a sample application with some functionalities available on riak_core.
