@@ -42,6 +42,9 @@ Error seems to be caused by Mix not handling rebar3 hooks properly. See e.g. htt
 % {provider_hooks, [{post, [{compile, {default, escriptize}}]}]}.
 ```
 
+(pmenhart, 2018-07-11) Rebar3 was fixed, use version 3.6.1 or up.
+`{:riak_core, "~> 3.1.1", hex: :riak_core_ng}` compiles (with gen_fsm_compat) without problems mentioned above.
+However, the forked version of cuttlefish is still needed.
 
 ## How to start a single node
 If you want run a single node you can execute in this way:
