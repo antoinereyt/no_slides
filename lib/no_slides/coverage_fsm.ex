@@ -25,6 +25,7 @@ defmodule NoSlides.CoverageFsm do
       NoSlides.Service,
       NoSlides.VNode_master,
       timeout,
+      :riak_core_coverage_plan, # specific for riak_core_ng
       %{from: from, req_id: req_id, args: args}
     }
   end
