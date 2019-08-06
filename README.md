@@ -1,8 +1,23 @@
+[![Build Status](https://travis-ci.org/pmenhart/no_slides.svg??branch=riak_core_3)](https://travis-ci.org/pmenhart/no_slides)
+
+
 # NoSlides example application
 
 Example application for the talk at [NoSlidesConf][0]. This application is a sample application with some functionalities available on riak_core.
 
-**You need to use Elixir 1.3 and Erlang 18.X**. There are some works on [riak_core][1] and [riak_core_ng][2] to move on Erlang 19.X, but when I wrote this docs it's not ready.
+## Erlang, Elixir, Rebar3 version
+
+On this branch I start to use [asdf][4] and as you can find [here](./.tool-versions) I compile everything with:
+
+```
+erlang 19.3
+elixir 1.4.2
+```
+
+I did a lot of problem to compile this because elixir now use rebar3 v 3.5.0 or greater, and it issue some problem especially with `cuttlefish` or other packages that want create and escript. Using an old version of rebar, the `3.2.0` for example everything works fine ...
+
+
+There are some works on [riak_core][1] and [riak_core_ng][2] to move on Erlang 19.X, but when I wrote this docs it's not ready.
 
 Clone the repository as usually, download the dependencies and compile the app in this way:
 
@@ -10,6 +25,26 @@ Clone the repository as usually, download the dependencies and compile the app i
 mix deps.get
 mix compile
 ```
+
+Run the unit test that executes the riak_core ring onseveral slave nodes in a cluster. Nodes are configured in `config/test.exs`. To prevent running RiakCore on the master node (which is harmless, but clutters the logs), invoke with:
+```shell
+mix test --no-start
+```
+
+### Comments on Erlang/Elixir compatibility
+(pmenhart, 2018-06-05) Hack to make the project working with erlang 20.3.6 and elixir 1.6.5:
+* After `mix deps.get`, I had to comment out "warnings_as_errors" in `deps/riak_ensemble/rebar.config` and in `deps/riak_core/rebar.config`.
+* Note this project is using `{:riak_core, "~> 3.0.9", hex: :riak_core_ng}`. Later riak_core_ng commits introduced gen_fsm_compat, which fails
+with newer Elixir+rebar3 because of "missing erl_vsn" issue: rebar_erl_vsn is a pre-compile hook in rebar.config of gen_fsm_compat and few other projects.
+Error seems to be caused by Mix not handling rebar3 hooks properly. See e.g. https://github.com/elixir-lang/elixir/issues/7733 and https://github.com/Kyorai/riak_core/issues/23
+* This issue is not specific to erl_vsn. For example, the forked https://github.com/gpad/cuttlefish (as used in mix.exs here) differs from the official version only by rebar.config commenting out:
+```
+% {provider_hooks, [{post, [{compile, {default, escriptize}}]}]}.
+```
+
+(pmenhart, 2018-07-11) Rebar3 was fixed, use version 3.6.1 or up.
+`{:riak_core, "~> 3.1.1", hex: :riak_core_ng}` compiles (with gen_fsm_compat) without problems mentioned above.
+However, the forked version of cuttlefish is still needed.
 
 ## How to start a single node
 If you want run a single node you can execute in this way:
@@ -106,6 +141,7 @@ Thanks to:
 [1]: https://github.com/basho/riak_core/
 [2]: https://github.com/project-fifo/riak_core
 [3]: https://hex.pm/packages/riak_core_ng
+[4]: https://github.com/asdf-vm/asdf
 [99]: https://medium.com/@gpad/
 
 

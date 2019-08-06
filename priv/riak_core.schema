@@ -1,4 +1,5 @@
 %%-*- mode: erlang -*-
+
 %% @doc enable active anti-entropy subsystem
 {mapping, "anti_entropy", "riak_core.anti_entropy", [
   {datatype, {enum, [on, off, debug]}},
@@ -295,6 +296,157 @@ end
   Size =< 1024
  end}.
 
+{mapping, "buckets.default.pr", "riak_core.default_bucket_props.pr", [
+  {default, "0"},
+  {level, advanced}
+]}.
+
+%% Cut and paste translation screams to be rewritten as a datatype, but that's a
+%% "nice to have"
+{translation,
+  "riak_core.default_bucket_props.pr",
+  fun(Conf) ->
+    Setting = cuttlefish:conf_get("buckets.default.pr", Conf),
+    case Setting of
+      "quorum" -> quorum;
+      "all" -> all;
+      X ->
+        try list_to_integer(Setting) of
+          Int -> Int
+        catch
+          E:R -> error
+        end
+    end
+  end
+}.
+
+{mapping, "buckets.default.r", "riak_core.default_bucket_props.r", [
+  {default, "quorum"},
+  {level, advanced}
+]}.
+{translation,
+  "riak_core.default_bucket_props.r",
+  fun(Conf) ->
+    Setting = cuttlefish:conf_get("buckets.default.r", Conf),
+    case Setting of
+      "quorum" -> quorum;
+      "all" -> all;
+      X ->
+        try list_to_integer(Setting) of
+          Int -> Int
+        catch
+          E:R -> error
+        end
+    end
+  end
+}.
+
+{mapping, "buckets.default.w", "riak_core.default_bucket_props.w", [
+  {default, "quorum"},
+  {level, advanced}
+]}.
+{translation,
+  "riak_core.default_bucket_props.w",
+  fun(Conf) ->
+    Setting = cuttlefish:conf_get("buckets.default.w", Conf),
+    case Setting of
+      "quorum" -> quorum;
+      "all" -> all;
+      X ->
+        try list_to_integer(Setting) of
+          Int -> Int
+        catch
+          E:R -> error
+        end
+    end
+  end
+}.
+
+{mapping, "buckets.default.pw", "riak_core.default_bucket_props.pw", [
+  {default, "0"},
+  {level, advanced}
+]}.
+{translation,
+  "riak_core.default_bucket_props.pw",
+  fun(Conf) ->
+    Setting = cuttlefish:conf_get("buckets.default.pw", Conf),
+    case Setting of
+      "quorum" -> quorum;
+      "all" -> all;
+      X ->
+        try list_to_integer(Setting) of
+          Int -> Int
+        catch
+          E:R -> error
+        end
+    end
+  end
+}.
+
+{mapping, "buckets.default.dw", "riak_core.default_bucket_props.dw", [
+  {default, "quorum"},
+  {level, advanced}
+]}.
+{translation,
+  "riak_core.default_bucket_props.dw",
+  fun(Conf) ->
+    Setting = cuttlefish:conf_get("buckets.default.dw", Conf),
+    case Setting of
+      "quorum" -> quorum;
+      "all" -> all;
+      X ->
+        try list_to_integer(Setting) of
+          Int -> Int
+        catch
+          E:R -> error
+        end
+    end
+  end
+}.
+
+{mapping, "buckets.default.rw", "riak_core.default_bucket_props.rw", [
+  {default, "quorum"},
+  {level, advanced}
+]}.
+{translation,
+  "riak_core.default_bucket_props.rw",
+  fun(Conf) ->
+    Setting = cuttlefish:conf_get("buckets.default.rw", Conf),
+    case Setting of
+      "quorum" -> quorum;
+      "all" -> all;
+      X ->
+        try list_to_integer(Setting) of
+          Int -> Int
+        catch
+          E:R -> error
+        end
+    end
+  end
+}.
+
+%% {mapping, "buckets.default.basic_quorum", "riak_core.default_bucket_props.basic_quorum", false},
+%% {mapping, "buckets.default.notfound_ok", "riak_core.default_bucket_props.notfound_ok", true}
+
+%% @doc whether or not siblings are allowed.
+%% Note: See Vector Clocks for a discussion of sibling resolution.
+{mapping, "buckets.default.siblings", "riak_core.default_bucket_props.allow_mult", [
+  {datatype, {enum, [on, off]}},
+  {default, on},
+  {level, advanced}
+]}.
+
+{translation,
+ "riak_core.default_bucket_props.allow_mult",
+ fun(Conf) ->
+  Setting = cuttlefish:conf_get("buckets.default.siblings", Conf),
+    case Setting of
+      on -> true;
+      off -> false;
+      _Default -> true
+    end
+ end}.
+
 {validator, "ring_size^2", "not a power of 2",
  fun(Size) ->
   (Size band (Size-1) =:= 0)
@@ -364,7 +516,7 @@ end
   "can't be a local ip",
   fun(AddrString) ->
     case inet_parse:address(AddrString) of
-      {ok, {127, _, _, _}} -> false;
+      {ok, {127, 0, _, _}} -> false;
       {ok, _} -> true;
       {error, _} -> false
     end
@@ -426,6 +578,19 @@ end
   {default, off},
   {datatype, flag}
 ]}.
+
+%% consistent on/off (in lieu of enabled/disabled, true/false)
+{ translation,
+  "riak_core.dtrace_support",
+  fun(Conf) ->
+    Setting = cuttlefish:conf_get("dtrace", Conf),
+    case Setting of
+      on -> true;
+      off -> false;
+      _Default -> false
+    end
+  end
+}.
 
 %% @doc Platform-specific installation paths (substituted by rebar)
 {mapping, "platform_bin_dir", "riak_core.platform_bin_dir", [
@@ -545,3 +710,20 @@ end
     lists:sort(lists:foldl(Fold, [],
         cuttlefish_variable:filter_by_prefix(["cluster", "job"], Conf)))
  end}.
+
+
+%% @doc Some requests to the vnodes are handled by an asyncronous worker pool.
+%% This parameter allows for tuning this pools behaviour when it comes dealing
+%% with requests that are queued.
+%% The default (fifo) will serve requests in the order they arrive at the worker
+%% pool. The alternative is to serve the requests in the reverse order, dealing
+%% with the most recent request first.
+%% There are pro's and con's for both aproaches, it is best to test out what
+%% works best for the desired characteristics.
+%%
+%% As a very rought rule of thumb:
+%%  - fifo will lead to lower extremes
+%%  - filo will lead to lower medians/mediums
+{mapping, "worker.queue_strategy", "riak_core.queue_worker_strategy",
+ [{default, fifo},
+  {datatype, {enum, [fifo, filo]}}]}.
