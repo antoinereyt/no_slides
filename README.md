@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/pmenhart/no_slides.svg??branch=riak_core_3)](https://travis-ci.org/pmenhart/no_slides)
+[![Build Status](https://travis-ci.org/antoinereyt/riak_core_elixir.svg??branch=riak_core_3)](https://travis-ci.org/antoinereyt/riak_core_elixir)
 
 
 # NoSlides example application
