@@ -11,6 +11,13 @@ defmodule NoSlides.VNode do
     {:ok, %{partition: partition, data: %{}}}
   end
 
+  def handle_command({:test_sync_spawn_command, v}, _sender, state) do
+    Logger.debug("[test_sync_spawn_command received]: with value: #{inspect v} state: #{inspect state.partition} pid: #{inspect self()}... ")
+    :timer.sleep(15_000)
+    Logger.debug("[test_sync_spawn_command received]: respond")
+    {:reply, :oki_res, state}
+  end
+
   def handle_command({:ping, v}, _sender, state) do
     Logger.debug("[ping received]: with value: #{inspect v} state: #{inspect state.partition} pid: #{inspect self()}... ")
     # :timer.sleep(5000)
@@ -36,8 +43,9 @@ defmodule NoSlides.VNode do
   end
 
   def handle_command({:get, {req_id, k}}, sender, state) do
-    Logger.debug("[ft_get]: req_id: #{inspect req_id} k: #{inspect k} - sender: #{inspect sender}")
-    {:reply, {:ok, req_id, Map.get(state.data, k, nil)}, state}
+    val = Map.get(state.data, k, nil)
+    Logger.debug("[ft_get]: req_id: #{inspect req_id} k: #{inspect k} => #{inspect(val)}\n - sender: #{inspect sender}")
+    {:reply, {:ok, req_id, val}, state}
   end
 
   def handoff_starting(dest, state) do
